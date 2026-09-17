@@ -1,0 +1,31 @@
+# Development override — use with:
+#   docker compose -f docker-compose.yml -f docker-compose.dev.yml up
+#
+# Replaces the nginx-built frontend with the Vite hot-reload dev server.
+# Backend code is volume-mounted so Django's auto-reloader works too.
+
+version: "3.9"
+
+services:
+
+  backend:
+    volumes:
+      - ./backend:/app          # live reload for Django
+      - media_files:/app/media
+    environment:
+      DEBUG: "True"
+      CORS_ALLOWED_ORIGINS: http://localhost:5173,http://127.0.0.1:5173
+      SITE_BASE_URL: http://localhost:5173
+
+  frontend:
+    build: {}          # don't use the production Dockerfile
+    image: node:22-alpine
+    working_dir: /app
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    ports:
+      - "5173:5173"
+    environment:
+      VITE_API_URL: http://localhost:8000/api
+    command: sh -c "npm install && npm run dev -- --host"
