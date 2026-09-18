@@ -80,10 +80,6 @@ docker image prune -f > /dev/null 2>&1 || true
 docker builder prune -f --filter type=exec.cachemount > /dev/null 2>&1 || true
 ok "Pre-clean done."
 
-# ── Pull base images ──────────────────────────────────────────────────────────
-log "Pulling latest base images..."
-$COMPOSE_CMD pull db 2>/dev/null || true
-
 # ── Build ─────────────────────────────────────────────────────────────────────
 if $REBUILD; then
   log "Building all images — no cache..."
@@ -94,13 +90,9 @@ else
 fi
 ok "Images built."
 
-# ── Start database ────────────────────────────────────────────────────────────
-log "Starting PostgreSQL..."
-$COMPOSE_CMD up -d db
-
 log "Waiting for PostgreSQL to accept connections..."
 MAX_WAIT=30; ELAPSED=0
-until $COMPOSE_CMD exec -T db pg_isready -U smiley -d smileydb > /dev/null 2>&1; do
+until pg_isready -h 127.0.0.1 -p 5337 -U smiley -d smileydb > /dev/null 2>&1; do
   [ $ELAPSED -ge $MAX_WAIT ] && fail "PostgreSQL not ready after ${MAX_WAIT}s. Check: docker compose logs db"
   sleep 1; ELAPSED=$((ELAPSED+1)); printf "."
 done
@@ -131,17 +123,17 @@ ok "All services up."
 # ── Health checks ─────────────────────────────────────────────────────────────
 log "Waiting for Django backend..."
 MAX_WAIT=40; ELAPSED=0
-until curl -sf http://localhost:8000/api/auth/register/ -X OPTIONS > /dev/null 2>&1; do
+until curl -sf http://localhost:8006/api/auth/register/ -X OPTIONS > /dev/null 2>&1; do
   [ $ELAPSED -ge $MAX_WAIT ] && { warn "Backend slow — check: docker compose logs backend"; break; }
   sleep 1; ELAPSED=$((ELAPSED+1)); printf "."
 done
 echo ""
-[ $ELAPSED -lt $MAX_WAIT ] && ok "Backend responding at http://localhost:8000"
+[ $ELAPSED -lt $MAX_WAIT ] && ok "Backend responding at http://localhost:8006"
 
 if $DEV; then
   FRONTEND_PORT=5173
 else
-  FRONTEND_PORT=80
+  FRONTEND_PORT=3004
 fi
 
 log "Waiting for frontend..."
@@ -164,8 +156,8 @@ else
 fi
 echo -e "${BOLD}════════════════════════════════════════════════════${RESET}"
 echo -e "  Parent Portal  →  ${CYAN}http://localhost:${FRONTEND_PORT}${RESET}"
-echo -e "  Backend API    →  ${CYAN}http://localhost:8000/api/${RESET}"
-echo -e "  Django Admin   →  ${CYAN}http://localhost:8000/django-admin/${RESET}"
+echo -e "  Backend API    →  ${CYAN}http://localhost:8006/api/${RESET}"
+echo -e "  Django Admin   →  ${CYAN}http://localhost:8006/django-admin/${RESET}"
 echo -e "  Admin Portal   →  ${CYAN}http://localhost:${FRONTEND_PORT}/admin${RESET}"
 echo ""
 echo -e "  ${YELLOW}Default admin credentials:${RESET}"
