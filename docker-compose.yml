@@ -9,8 +9,6 @@ services:
     restart: unless-stopped
     env_file:
       - ./backend/.env
-    environment:
-      SITE_BASE_URL: https://smileyfinder.fixtureapps.com
     volumes:
       - media_files:/app/media
       - static_files:/app/staticfiles
