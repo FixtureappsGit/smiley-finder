@@ -24,7 +24,7 @@ services:
     build:
       context: ./frontend
       args:
-        VITE_API_URL: http://localhost:8000/api
+        VITE_API_URL: https://smileyfinder.fixtureapps.com/api
     restart: unless-stopped
     depends_on:
       - backend

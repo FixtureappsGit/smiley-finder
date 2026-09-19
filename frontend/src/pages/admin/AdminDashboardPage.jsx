@@ -81,7 +81,7 @@ export default function AdminDashboardPage() {
           </p>
         </Link>
         <a
-          href="http://localhost:8000/django-admin/"
+          href="https://smileyfinder.fixtureapps.com/django-admin/"
           target="_blank"
           rel="noreferrer"
           className="card hover:shadow-md transition-shadow group"

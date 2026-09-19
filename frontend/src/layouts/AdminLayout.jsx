@@ -77,7 +77,7 @@ export default function AdminLayout() {
       {/* Footer */}
       <div className="px-3 py-4 border-t border-gray-100 space-y-1">
         <a
-          href="http://localhost:8000/django-admin/"
+          href="https://smileyfinder.fixtureapps.com/django-admin/"
           target="_blank"
           rel="noreferrer"
           className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-gray-500 hover:bg-gray-100 hover:text-gray-700 transition-colors"
